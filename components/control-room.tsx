@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -181,6 +182,9 @@ export function ControlRoom() {
               <Button variant="outline" size="sm" onClick={() => setActiveView("ingest")}>
                 <RefreshCw className="size-4 mr-2" />
                 Sync
+              </Button>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/ai-lab">AI Lab</Link>
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setActiveView("integrations")}>
                 Integrations
