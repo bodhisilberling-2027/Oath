@@ -29,6 +29,7 @@ import SettingsPage from "@/components/settings-page"
 import { BoardMembersDialog } from "@/components/board-members-dialog"
 import { DecisionReviewDialog } from "@/components/decision-review-dialog"
 import { GovernanceChatDialog } from "@/components/governance-chat-dialog"
+import { InsightAgentPanel } from "@/components/insight-agent-panel"
 
 interface Decision {
   id: string
@@ -201,6 +202,10 @@ export function ControlRoom() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-semibold text-balance">Control Room</h2>
+        </div>
+
+        <div className="mb-8">
+          <InsightAgentPanel />
         </div>
 
         {/* Main Grid */}
