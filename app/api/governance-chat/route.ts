@@ -2,11 +2,62 @@ import { consumeStream, convertToModelMessages, streamText, type UIMessage } fro
 
 export const maxDuration = 30
 
+// Persona context mapping by role
+const PERSONA_CONTEXTS: Record<string, string> = {
+  ceo: `You are assisting a CEO (Chief Executive Officer).
+Focus on: strategic vision, company-wide decisions, board relations, high-priority approvals, and executive leadership.
+Prioritize: executive summaries, key metrics, strategic partnerships, and action items requiring CEO sign-off.
+Speak at a high level about company direction and major initiatives.`,
+  
+  cfo: `You are assisting a CFO (Chief Financial Officer).
+Focus on: financial performance, budgets, audits, investor relations, and fiscal compliance.
+Prioritize: financial metrics, budget variances, audit progress, cash flow, and fiduciary responsibilities.
+Provide detailed financial context and quantitative analysis.`,
+  
+  coo: `You are assisting a COO (Chief Operating Officer).
+Focus on: operations, supply chain, infrastructure, process efficiency, and execution tracking.
+Prioritize: operational metrics, deployment progress, vendor SLAs, and cross-functional coordination.
+Emphasize execution status and operational risks.`,
+  
+  gc: `You are assisting a General Counsel (Chief Legal Officer).
+Focus on: legal compliance, contracts, regulatory matters, risk mitigation, and governance policies.
+Prioritize: compliance deadlines, contract reviews, regulatory changes, and legal due diligence.
+Highlight legal risks and compliance requirements.`,
+  
+  cbo: `You are assisting a CBO (Chief Business Officer).
+Focus on: partnerships, market expansion, revenue initiatives, and business development.
+Prioritize: partnership pipeline, market opportunities, revenue metrics, and competitive positioning.
+Emphasize growth opportunities and business impact.`,
+  
+  investor: `You are assisting an Investor (Board Investor / VC Partner).
+Focus on: portfolio performance, ROI metrics, strategic milestones, and fiduciary oversight.
+Prioritize: financial returns, milestone tracking, risk assessment, and governance compliance.
+Provide investor-relevant summaries with focus on value creation and risk.`,
+  
+  board: `You are assisting a Board Member (Independent Director).
+Focus on: governance oversight, executive performance, risk assessment, and shareholder interests.
+Prioritize: board-level decisions, governance policies, executive compensation, and strategic direction.
+Maintain a governance-focused, oversight perspective.`,
+  
+  secretary: `You are assisting a Board Secretary (Corporate Secretary).
+Focus on: meeting logistics, minutes, compliance deadlines, and documentation.
+Prioritize: meeting schedules, agenda items, filing deadlines, and record-keeping.
+Emphasize procedural accuracy and deadline management.`,
+}
+
 // Sample governance context - in production this would query real data
-const getGovernanceContext = () => {
+const getGovernanceContext = (personaId?: string, personaRules?: string) => {
+  let personaContext = ""
+  if (personaId && PERSONA_CONTEXTS[personaId]) {
+    personaContext = `\n${PERSONA_CONTEXTS[personaId]}\n`
+  }
+  if (personaRules) {
+    personaContext += `\nAdditional user preferences:\n${personaRules}\n`
+  }
+
   return `
 You are an AI assistant for NVIDIA's governance system called Oath. You have access to all governance information including decisions, commitments, meetings, and audit trails.
-
+${personaContext}
 Current Date: November 23, 2025
 
 Key Decisions Currently Active:
@@ -58,15 +109,16 @@ Answer questions about:
 - Evidence and supporting documentation
 
 Be concise, professional, and fact-based. Reference specific dates, owners, and metrics when available.
+${personaId ? `Tailor your responses to be most relevant for ${PERSONA_CONTEXTS[personaId] ? "this user's role and priorities" : "the user"}.` : ""}
 `
 }
 
 export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json()
+  const { messages, personaId, personaRules }: { messages: UIMessage[]; personaId?: string; personaRules?: string } = await req.json()
 
   const systemMessage = {
     role: "system" as const,
-    content: getGovernanceContext(),
+    content: getGovernanceContext(personaId, personaRules),
   }
 
   const prompt = convertToModelMessages([systemMessage, ...messages])

@@ -5,12 +5,14 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
-import { Send, Loader2 } from "lucide-react"
+import { Send, Loader2, User } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useMyOathStore, PERSONAS, generatePersonaContext } from "@/lib/my-oath-store"
 
 interface GovernanceChatDialogProps {
   open: boolean
@@ -20,9 +22,19 @@ interface GovernanceChatDialogProps {
 export function GovernanceChatDialog({ open, onOpenChange }: GovernanceChatDialogProps) {
   const [input, setInput] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
+  
+  const { selectedPersona, rules } = useMyOathStore()
+  const currentPersona = PERSONAS.find((p) => p.id === selectedPersona)
+  const personaRulesContext = selectedPersona ? generatePersonaContext(selectedPersona, rules) : undefined
 
   const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/governance-chat" }),
+    transport: new DefaultChatTransport({ 
+      api: "/api/governance-chat",
+      body: {
+        personaId: selectedPersona,
+        personaRules: personaRulesContext,
+      },
+    }),
   })
 
   // Auto-scroll to bottom when new messages arrive
@@ -44,10 +56,20 @@ export function GovernanceChatDialog({ open, onOpenChange }: GovernanceChatDialo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] h-[600px] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle>Ask About Governance</DialogTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Ask questions about decisions, commitments, meetings, and board activity
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle>Ask About Governance</DialogTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Ask questions about decisions, commitments, meetings, and board activity
+              </p>
+            </div>
+            {currentPersona && (
+              <Badge variant="outline" className="py-1.5 px-3">
+                <User className="size-3 mr-2" />
+                {currentPersona.title}
+              </Badge>
+            )}
+          </div>
         </DialogHeader>
 
         <ScrollArea className="flex-1 px-6" ref={scrollRef}>

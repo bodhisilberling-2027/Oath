@@ -19,6 +19,7 @@ import {
   Settings,
   RefreshCw,
   MessageSquare,
+  Sparkles,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import PacketDrafting from "@/components/packet-drafting"
@@ -31,6 +32,7 @@ import { BoardMembersDialog } from "@/components/board-members-dialog"
 import { DecisionReviewDialog } from "@/components/decision-review-dialog"
 import { GovernanceChatDialog } from "@/components/governance-chat-dialog"
 import { InsightAgentPanel } from "@/components/insight-agent-panel"
+import MyOath from "@/components/my-oath"
 
 interface Decision {
   id: string
@@ -51,7 +53,7 @@ interface Commitment {
 
 export function ControlRoom() {
   const [activeView, setActiveView] = useState<
-    "overview" | "packet" | "meeting" | "execution" | "audit" | "integrations" | "settings" | "ingest"
+    "overview" | "packet" | "meeting" | "execution" | "audit" | "integrations" | "settings" | "ingest" | "myoath"
   >("overview")
   const [showBoardMembers, setShowBoardMembers] = useState(false)
   const [reviewingDecision, setReviewingDecision] = useState<Decision | null>(null)
@@ -159,6 +161,10 @@ export function ControlRoom() {
     return null
   }
 
+  if (activeView === "myoath") {
+    return <MyOath onBack={() => setActiveView("overview")} />
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -175,7 +181,11 @@ export function ControlRoom() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="default" size="sm" onClick={() => setShowGovernanceChat(true)}>
+              <Button variant="default" size="sm" onClick={() => setActiveView("myoath")} className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700">
+                <Sparkles className="size-4 mr-2" />
+                My Oath
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowGovernanceChat(true)}>
                 <MessageSquare className="size-4 mr-2" />
                 Ask
               </Button>
