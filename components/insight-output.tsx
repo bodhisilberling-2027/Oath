@@ -60,7 +60,7 @@ export function InsightOutputView({
     return (
       <Card className="border-dashed bg-muted/30 p-6">
         <p className="text-sm text-muted-foreground">
-          Select sources, choose a persona, and ask the Insight Agent to generate a board-ready briefing.
+          Select sources and ask the Insight Agent to generate a board-ready briefing.
         </p>
       </Card>
     )
@@ -72,23 +72,6 @@ export function InsightOutputView({
 
   return (
     <div className={cn("space-y-6", variant === "lab" && "space-y-8")}>
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <h4 className="text-lg font-semibold">Board-level summary</h4>
-          <Badge variant="secondary" className="text-xs">
-            Persona: {personaLabel}
-          </Badge>
-        </div>
-        <ul className="space-y-2 text-sm text-muted-foreground">
-          {insight.summary.map((bullet, idx) => (
-            <li key={idx} className="flex items-start gap-2">
-              <span className="mt-1 size-1.5 rounded-full bg-primary opacity-70" />
-              <span>{bullet}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       <section className="space-y-3">
         <h4 className="text-lg font-semibold">Top risks and red flags</h4>
         <div className="grid gap-3">

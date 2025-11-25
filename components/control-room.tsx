@@ -21,7 +21,6 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import PacketDrafting from "@/components/packet-drafting"
-import LiveMeeting from "@/components/live-meeting"
 import ExecutionTracking from "@/components/execution-tracking"
 import { AuditTrail } from "@/components/audit-trail"
 import Integrations from "@/components/integrations"
@@ -51,7 +50,7 @@ interface Commitment {
 
 export function ControlRoom() {
   const [activeView, setActiveView] = useState<
-    "overview" | "packet" | "meeting" | "execution" | "audit" | "integrations" | "settings" | "myoath"
+    "overview" | "packet" | "execution" | "audit" | "integrations" | "settings" | "myoath"
   >("overview")
   const [showBoardMembers, setShowBoardMembers] = useState(false)
   const [reviewingDecision, setReviewingDecision] = useState<Decision | null>(null)
@@ -129,10 +128,6 @@ export function ControlRoom() {
 
   if (activeView === "packet") {
     return <PacketDrafting onBack={() => setActiveView("overview")} />
-  }
-
-  if (activeView === "meeting") {
-    return <LiveMeeting onBack={() => setActiveView("overview")} />
   }
 
   if (activeView === "execution") {
@@ -269,24 +264,29 @@ export function ControlRoom() {
               <Calendar className="size-5 text-muted-foreground" />
             </div>
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="size-2 rounded-full bg-accent animate-pulse" />
-                  <span className="text-sm font-medium text-accent-foreground">Next Board Meeting</span>
+              <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                <div className="flex flex-wrap items-baseline justify-between gap-3 mb-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Next board session</p>
+                    <p className="font-semibold text-lg">Q4 Strategic Review</p>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    3 days out
+                  </Badge>
                 </div>
-                <p className="font-semibold text-lg mb-2">Q4 Strategic Review</p>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p className="flex items-center gap-2">
                     <Calendar className="size-4" />
                     November 10, 2025 • 8:00 PM PT
                   </p>
                   <p className="flex items-center gap-2">
-                    <Users className="size-4" />8 board members attending
+                    <Users className="size-4" />8 directors confirmed
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <FileText className="size-4" />
+                    Packet finalized and circulating to the board
                   </p>
                 </div>
-                <Button className="w-full mt-4" onClick={() => setActiveView("meeting")}>
-                  Start Meeting
-                </Button>
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium">Agenda Items:</p>

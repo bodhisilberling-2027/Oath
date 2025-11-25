@@ -1,7 +1,7 @@
 import type { ComponentType } from "react"
 import { AlertTriangle, FileText, Mail, MessageSquare } from "lucide-react"
 
-import type { InsightPersona, SourceSystem } from "@/lib/insight-types"
+import type { SourceSystem } from "@/lib/insight-types"
 
 export interface SourceOption {
   label: string
@@ -16,10 +16,4 @@ export const SOURCE_OPTIONS: Record<SourceSystem, SourceOption> = {
   docs: { label: "Docs", description: "QBRs, PRDs, briefs", icon: FileText, accent: "text-emerald-400" },
   incidents: { label: "Incidents", description: "Outages, trust", icon: AlertTriangle, accent: "text-rose-400" },
 }
-
-export const PERSONA_OPTIONS: { value: InsightPersona; label: string }[] = [
-  { value: "BoardMember", label: "Board Member" },
-  { value: "CFO", label: "CFO" },
-  { value: "COO", label: "COO" },
-]
 

@@ -9,25 +9,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { useInsightAgent } from "@/hooks/use-insight-agent"
-import { InsightPersona, SourceSystem } from "@/lib/insight-types"
+import type { SourceSystem } from "@/lib/insight-types"
 import { mockContextBySource } from "@/lib/context-data"
-import { PERSONA_OPTIONS, SOURCE_OPTIONS } from "@/components/insight-agent/config"
+import { SOURCE_OPTIONS } from "@/components/insight-agent/config"
 
 export function InsightAgentPanel() {
   const {
     insight,
     isGenerating,
     persona,
-    setPersona,
     selectedSources,
     setSourceSelection,
     selectedSnippets,
@@ -95,22 +87,6 @@ export function InsightAgentPanel() {
                     )
                   })}
                 </div>
-              </div>
-
-              <div className="grid gap-2">
-                <p className="text-sm font-medium text-muted-foreground">Persona</p>
-                <Select value={persona} onValueChange={(value: InsightPersona) => setPersona(value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose persona" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PERSONA_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </div>
 

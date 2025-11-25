@@ -14,15 +14,11 @@ const normalizeSources = (sources: SourceSystem[]) =>
 
 interface UseInsightAgentOptions {
   defaultSources?: SourceSystem[]
-  defaultPersona?: InsightPersona
 }
 
-export function useInsightAgent({
-  defaultSources = allSourceSystems,
-  defaultPersona = "BoardMember",
-}: UseInsightAgentOptions = {}) {
+export function useInsightAgent({ defaultSources = allSourceSystems }: UseInsightAgentOptions = {}) {
+  const persona: InsightPersona = "BoardMember"
   const [selectedSources, setSelectedSources] = useState<SourceSystem[]>(normalizeSources(defaultSources))
-  const [persona, setPersona] = useState<InsightPersona>(defaultPersona)
   const [insight, setInsight] = useState<InsightOutput | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const hasBootstrapped = useRef(false)
@@ -97,8 +93,6 @@ export function useInsightAgent({
   }, [generateInsight])
 
   return {
-    persona,
-    setPersona,
     insight,
     isGenerating,
     selectedSources,
@@ -110,6 +104,7 @@ export function useInsightAgent({
     lastInsightCounts,
     combinedContext,
     generateInsight,
+    persona,
   }
 }
 
