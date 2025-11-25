@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -17,7 +16,6 @@ import {
   ChevronRight,
   Network,
   Settings,
-  RefreshCw,
   MessageSquare,
   Sparkles,
 } from "lucide-react"
@@ -53,7 +51,7 @@ interface Commitment {
 
 export function ControlRoom() {
   const [activeView, setActiveView] = useState<
-    "overview" | "packet" | "meeting" | "execution" | "audit" | "integrations" | "settings" | "ingest" | "myoath"
+    "overview" | "packet" | "meeting" | "execution" | "audit" | "integrations" | "settings" | "myoath"
   >("overview")
   const [showBoardMembers, setShowBoardMembers] = useState(false)
   const [reviewingDecision, setReviewingDecision] = useState<Decision | null>(null)
@@ -153,14 +151,6 @@ export function ControlRoom() {
     return <SettingsPage onBack={() => setActiveView("overview")} />
   }
 
-  if (activeView === "ingest") {
-    // Navigate to /ingest page
-    if (typeof window !== "undefined") {
-      window.location.href = "/ingest"
-    }
-    return null
-  }
-
   if (activeView === "myoath") {
     return <MyOath onBack={() => setActiveView("overview")} />
   }
@@ -181,20 +171,18 @@ export function ControlRoom() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="default" size="sm" onClick={() => setActiveView("myoath")} className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setActiveView("myoath")}
+                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+              >
                 <Sparkles className="size-4 mr-2" />
                 My Oath
               </Button>
               <Button variant="outline" size="sm" onClick={() => setShowGovernanceChat(true)}>
                 <MessageSquare className="size-4 mr-2" />
                 Ask
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setActiveView("ingest")}>
-                <RefreshCw className="size-4 mr-2" />
-                Sync
-              </Button>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/ai-lab">AI Lab</Link>
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setActiveView("integrations")}>
                 Integrations
