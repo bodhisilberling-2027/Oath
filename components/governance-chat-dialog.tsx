@@ -23,9 +23,9 @@ export function GovernanceChatDialog({ open, onOpenChange }: GovernanceChatDialo
   const [input, setInput] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
   
-  const { selectedPersona, rules } = useMyOathStore()
+  const { selectedPersona, rules, preferences } = useMyOathStore()
   const currentPersona = PERSONAS.find((p) => p.id === selectedPersona)
-  const personaRulesContext = selectedPersona ? generatePersonaContext(selectedPersona, rules) : undefined
+  const personaRulesContext = selectedPersona ? generatePersonaContext(selectedPersona, rules, preferences) : undefined
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({ 

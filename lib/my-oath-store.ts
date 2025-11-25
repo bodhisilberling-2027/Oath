@@ -89,12 +89,25 @@ export interface Update {
   read: boolean
 }
 
+// Natural language preference instruction
+export interface PreferenceInstruction {
+  id: string
+  text: string
+  createdAt: string
+}
+
 interface MyOathStore {
   // Selected persona
   selectedPersona: PersonaId | null
   setPersona: (id: PersonaId | null) => void
 
-  // Context rules
+  // Natural language preferences (replaces structured rules)
+  preferences: PreferenceInstruction[]
+  addPreference: (text: string) => void
+  removePreference: (id: string) => void
+  clearPreferences: () => void
+
+  // Context rules (legacy, kept for compatibility)
   rules: ContextRule[]
   addRule: (rule: ContextRule) => void
   updateRule: (id: string, updates: Partial<ContextRule>) => void
@@ -124,11 +137,31 @@ export const useMyOathStore = create<MyOathStore>()(
   persist(
     (set, get) => ({
       selectedPersona: null,
+      preferences: [],
       rules: [],
       actionItems: [],
       updates: [],
 
       setPersona: (id) => set({ selectedPersona: id }),
+
+      addPreference: (text) =>
+        set((state) => ({
+          preferences: [
+            ...state.preferences,
+            {
+              id: `pref-${Date.now()}`,
+              text,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        })),
+
+      removePreference: (id) =>
+        set((state) => ({
+          preferences: state.preferences.filter((p) => p.id !== id),
+        })),
+
+      clearPreferences: () => set({ preferences: [] }),
 
       addRule: (rule) =>
         set((state) => ({
@@ -197,22 +230,36 @@ export const useMyOathStore = create<MyOathStore>()(
   )
 )
 
-// Helper to generate AI context based on persona and rules
-export function generatePersonaContext(persona: PersonaId | null, rules: ContextRule[]): string {
+// Helper to generate AI context based on persona and natural language preferences
+export function generatePersonaContext(
+  persona: PersonaId | null, 
+  rules: ContextRule[],
+  preferences: PreferenceInstruction[] = []
+): string {
   const selectedPersona = PERSONAS.find((p) => p.id === persona)
   if (!selectedPersona) {
     return "The user has not selected a persona. Provide general governance information."
   }
-
-  const activeRules = rules.filter((r) => r.enabled)
-  const includeRules = activeRules.filter((r) => r.type === "include")
-  const excludeRules = activeRules.filter((r) => r.type === "exclude")
 
   let context = `
 You are assisting a ${selectedPersona.title} (${selectedPersona.description}).
 Their primary focus areas: ${selectedPersona.focus}
 Tailor all responses to their perspective and responsibilities.
 `
+
+  // Add natural language preferences
+  if (preferences.length > 0) {
+    context += `\nThe user has specified the following preferences for what they care about:\n`
+    preferences.forEach((p) => {
+      context += `- "${p.text}"\n`
+    })
+    context += `\nUse these preferences to filter, prioritize, and tailor all information, action items, and updates.\n`
+  }
+
+  // Legacy structured rules (if any)
+  const activeRules = rules.filter((r) => r.enabled)
+  const includeRules = activeRules.filter((r) => r.type === "include")
+  const excludeRules = activeRules.filter((r) => r.type === "exclude")
 
   if (includeRules.length > 0) {
     context += `\nFocus especially on:\n`

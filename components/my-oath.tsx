@@ -1,40 +1,30 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { toast } from "sonner"
 import {
   ArrowLeft,
   User,
-  Plus,
   Trash2,
   CheckCircle2,
   Clock,
-  AlertTriangle,
   Bell,
-  Filter,
   Sparkles,
   ChevronRight,
   X,
+  Send,
+  MessageSquare,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   useMyOathStore,
   PERSONAS,
   type PersonaId,
-  type ContextRule,
   type ActionItem,
   type Update,
 } from "@/lib/my-oath-store"
@@ -508,10 +498,9 @@ export default function MyOath({ onBack }: MyOathProps) {
   const {
     selectedPersona,
     setPersona,
-    rules,
-    addRule,
-    removeRule,
-    toggleRule,
+    preferences,
+    addPreference,
+    removePreference,
     actionItems,
     addActionItem,
     completeActionItem,
@@ -524,10 +513,9 @@ export default function MyOath({ onBack }: MyOathProps) {
     getUnreadUpdates,
   } = useMyOathStore()
 
-  const [newRuleCategory, setNewRuleCategory] = useState<ContextRule["category"]>("decisions")
-  const [newRuleType, setNewRuleType] = useState<"include" | "exclude">("include")
-  const [newRuleKeyword, setNewRuleKeyword] = useState("")
-  const [activeTab, setActiveTab] = useState<"actions" | "updates" | "rules">("actions")
+  const [preferenceInput, setPreferenceInput] = useState("")
+  const chatScrollRef = useRef<HTMLDivElement>(null)
+  const [activeTab, setActiveTab] = useState<"actions" | "updates" | "preferences">("actions")
 
   // Load sample data when persona changes
   useEffect(() => {
@@ -556,18 +544,12 @@ export default function MyOath({ onBack }: MyOathProps) {
     }
   }, [selectedPersona])
 
-  const handleAddRule = () => {
-    const rule: ContextRule = {
-      id: `rule-${Date.now()}`,
-      type: newRuleType,
-      category: newRuleCategory,
-      keyword: newRuleKeyword || undefined,
-      enabled: true,
-    }
-    addRule(rule)
-    setNewRuleKeyword("")
-    toast.success("Rule added", {
-      description: `AI will ${newRuleType === "include" ? "focus on" : "de-prioritize"} ${newRuleCategory}`,
+  const handleAddPreference = () => {
+    if (!preferenceInput.trim()) return
+    addPreference(preferenceInput.trim())
+    setPreferenceInput("")
+    toast.success("Preference added", {
+      description: "AI will use this to tailor your experience",
     })
   }
 
@@ -693,17 +675,17 @@ export default function MyOath({ onBack }: MyOathProps) {
               <Card
                 className={cn(
                   "p-4 cursor-pointer transition-all",
-                  activeTab === "rules" && "ring-2 ring-primary"
+                  activeTab === "preferences" && "ring-2 ring-primary"
                 )}
-                onClick={() => setActiveTab("rules")}
+                onClick={() => setActiveTab("preferences")}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Active Rules</p>
-                    <p className="text-3xl font-semibold">{rules.filter((r) => r.enabled).length}</p>
+                    <p className="text-sm text-muted-foreground">Preferences</p>
+                    <p className="text-3xl font-semibold">{preferences.length}</p>
                   </div>
                   <div className="size-12 rounded-full bg-purple-500/10 flex items-center justify-center">
-                    <Filter className="size-6 text-purple-500" />
+                    <MessageSquare className="size-6 text-purple-500" />
                   </div>
                 </div>
               </Card>
@@ -861,110 +843,103 @@ export default function MyOath({ onBack }: MyOathProps) {
                   </Card>
                 )}
 
-                {activeTab === "rules" && (
-                  <Card className="p-6">
-                    <div className="flex items-center justify-between mb-6">
+                {activeTab === "preferences" && (
+                  <Card className="p-6 flex flex-col h-[500px]">
+                    <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="text-xl font-semibold">Context Rules</h3>
+                        <h3 className="text-xl font-semibold">Your Preferences</h3>
                         <p className="text-sm text-muted-foreground">
-                          Tell the AI what to focus on or ignore
+                          Tell me what you care about in natural language
                         </p>
                       </div>
+                      <Badge variant="secondary">
+                        <Sparkles className="size-3 mr-1" />
+                        AI-Powered
+                      </Badge>
                     </div>
 
-                    {/* Add Rule Form */}
-                    <div className="flex flex-wrap gap-3 mb-6 p-4 rounded-lg bg-muted/50 border border-border">
-                      <Select
-                        value={newRuleType}
-                        onValueChange={(v) => setNewRuleType(v as "include" | "exclude")}
-                      >
-                        <SelectTrigger className="w-[130px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="include">Focus on</SelectItem>
-                          <SelectItem value="exclude">Ignore</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      <Select
-                        value={newRuleCategory}
-                        onValueChange={(v) => setNewRuleCategory(v as ContextRule["category"])}
-                      >
-                        <SelectTrigger className="w-[150px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="decisions">Decisions</SelectItem>
-                          <SelectItem value="commitments">Commitments</SelectItem>
-                          <SelectItem value="meetings">Meetings</SelectItem>
-                          <SelectItem value="risks">Risks</SelectItem>
-                          <SelectItem value="integrations">Integrations</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      <Input
-                        placeholder="Keyword (optional)"
-                        value={newRuleKeyword}
-                        onChange={(e) => setNewRuleKeyword(e.target.value)}
-                        className="w-[180px]"
-                      />
-
-                      <Button onClick={handleAddRule}>
-                        <Plus className="size-4 mr-2" />
-                        Add Rule
-                      </Button>
-                    </div>
-
-                    {/* Rules List */}
-                    <ScrollArea className="h-[300px]">
-                      <div className="space-y-2 pr-4">
-                        {rules.length === 0 ? (
-                          <div className="text-center py-12 text-muted-foreground">
-                            <Filter className="size-12 mx-auto mb-4 opacity-20" />
-                            <p>No rules yet. Add rules to customize AI behavior.</p>
+                    {/* Chat-like preferences display */}
+                    <ScrollArea className="flex-1 mb-4" ref={chatScrollRef}>
+                      <div className="space-y-3 pr-4">
+                        {preferences.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <MessageSquare className="size-12 mx-auto mb-4 opacity-20" />
+                            <p className="mb-4">No preferences set yet.</p>
+                            <p className="text-sm">Try something like:</p>
+                            <div className="mt-3 space-y-2">
+                              <button
+                                onClick={() => setPreferenceInput("Focus on high-priority decisions and risks")}
+                                className="block w-full text-left text-sm p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                              >
+                                "Focus on high-priority decisions and risks"
+                              </button>
+                              <button
+                                onClick={() => setPreferenceInput("I only care about commitments that are behind schedule")}
+                                className="block w-full text-left text-sm p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                              >
+                                "I only care about commitments that are behind schedule"
+                              </button>
+                              <button
+                                onClick={() => setPreferenceInput("Don't show me meeting updates unless I'm required to attend")}
+                                className="block w-full text-left text-sm p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                              >
+                                "Don't show me meeting updates unless I'm required to attend"
+                              </button>
+                              <button
+                                onClick={() => setPreferenceInput("Prioritize anything related to compliance or legal")}
+                                className="block w-full text-left text-sm p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                              >
+                                "Prioritize anything related to compliance or legal"
+                              </button>
+                            </div>
                           </div>
                         ) : (
-                          rules.map((rule) => (
+                          preferences.map((pref) => (
                             <div
-                              key={rule.id}
-                              className={cn(
-                                "flex items-center justify-between p-3 rounded-lg border transition-all",
-                                rule.enabled
-                                  ? "border-border bg-card"
-                                  : "border-border/50 bg-muted/30 opacity-50"
-                              )}
+                              key={pref.id}
+                              className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20"
                             >
-                              <div className="flex items-center gap-3">
-                                <Switch
-                                  checked={rule.enabled}
-                                  onCheckedChange={() => toggleRule(rule.id)}
-                                />
-                                <div>
-                                  <p className="text-sm font-medium">
-                                    {rule.type === "include" ? "Focus on" : "Ignore"}{" "}
-                                    <span className="text-primary">{rule.category}</span>
-                                    {rule.keyword && (
-                                      <span className="text-muted-foreground">
-                                        {" "}
-                                        containing "{rule.keyword}"
-                                      </span>
-                                    )}
-                                  </p>
-                                </div>
+                              <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <User className="size-4 text-primary" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm">{pref.text}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {formatTimeAgo(pref.createdAt)}
+                                </p>
                               </div>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => removeRule(rule.id)}
+                                className="flex-shrink-0"
+                                onClick={() => removePreference(pref.id)}
                               >
-                                <Trash2 className="size-4 text-muted-foreground" />
+                                <X className="size-4 text-muted-foreground" />
                               </Button>
                             </div>
                           ))
                         )}
                       </div>
                     </ScrollArea>
+
+                    {/* Input area */}
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        handleAddPreference()
+                      }}
+                      className="flex gap-2 pt-4 border-t border-border"
+                    >
+                      <Input
+                        value={preferenceInput}
+                        onChange={(e) => setPreferenceInput(e.target.value)}
+                        placeholder="Tell me what you care about..."
+                        className="flex-1"
+                      />
+                      <Button type="submit" disabled={!preferenceInput.trim()}>
+                        <Send className="size-4" />
+                      </Button>
+                    </form>
                   </Card>
                 )}
               </div>
@@ -996,8 +971,8 @@ export default function MyOath({ onBack }: MyOathProps) {
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Active Rules</span>
-                      <Badge variant="secondary">{rules.filter((r) => r.enabled).length}</Badge>
+                      <span className="text-muted-foreground">Preferences</span>
+                      <Badge variant="secondary">{preferences.length}</Badge>
                     </div>
                   </div>
 
